@@ -1,0 +1,42 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+
+digits = pd.read_csv('digits.csv')
+
+pixels = digits.drop('number_label', axis=1)
+
+single_image_row = pixels.iloc[0]
+
+image_array = np.array(single_image_row)
+
+image_matrix = image_array.reshape(8, 8)
+
+plt.figure(figsize=(4, 4))
+plt.imshow(image_matrix, cmap='gray')  
+plt.title("Handwritten Digit")
+plt.show()
+
+scaler = StandardScaler()
+pixels_scaled = scaler.fit_transform(pixels)
+
+pca = PCA(n_components=2)
+pca_result = pca.fit_transform(pixels_scaled)
+
+explained_variance_ratio = pca.explained_variance_ratio_
+print(f"Variance explained by PC1: {explained_variance_ratio[0]:.2f}")
+print(f"Variance explained by PC2: {explained_variance_ratio[1]:.2f}")
+pc_correlation_matrix = np.corrcoef(pca_result.T)
+print(f"Correlation Matrix between Principal Components:\n{pc_correlation_matrix}")
+
+
+pca_df = pd.DataFrame(data=pca_result, columns=['PC1', 'PC2'])
+pca_df['number_label'] = digits['number_label']
+
+plt.figure(figsize=(10, 8))
+sns.scatterplot(x='PC1', y='PC2', hue='number_label', data=pca_df, legend='full')
+plt.title('2D PCA of Handwritten Digits')
+plt.show()
